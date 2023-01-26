@@ -1,0 +1,10 @@
+[package]
+name = "penrose-wm"
+version = "0.0.1"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+penrose = { version = "0.3.1", features = ["serde"] }
+tracing-subscriber = { version = "0.3.16", features = ["env-filter"] }
