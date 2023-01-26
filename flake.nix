@@ -18,36 +18,45 @@
   outputs = { nixpkgs, flake-utils, rust-overlay, nocargo, ... }@inputs:
     flake-utils.lib.eachSystem [ "x86_64-linux" ] (system:
       let
-
         # for development
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs {
           inherit system overlays;
         };
 
+        nocargo' = nocargo.lib.${system};
+
+      in
+      let
+        deps = with pkgs; [
+          glib.dev
+          cairo.dev
+          pango.dev
+          harfbuzz.dev
+          pkg-config
+          python3
+          xorg.libxcb.dev
+          xorg.libXrandr.dev
+          xorg.libXrender.dev
+          xorg.xmodmap
+        ];
+      in
+
+      let
         # for building
-        ws = nocargo.lib.${system}.mkRustPackageOrWorkspace {
+        ws = nocargo'.mkRustPackageOrWorkspace {
           src = ./.;
 
-          buildCrateOverrides = with nixpkgs.legacyPackages.${system}; {
+          buildCrateOverrides = {
             # Use package name to reference local crates.
-            "penrose-wm" = old: {
-              nativeBuildInputs = [
-                glib.dev
-                cairo.dev
-                pango.dev
-                harfbuzz.dev
-                pkg-config
-                python3
-                xorg.libxcb.dev
-                xorg.libXrandr.dev
-                xorg.libXrender.dev
-                xorg.xmodmap
-              ];
-            };
+            "penrose-wm" = (old: {
+              nativeBuildInputs = deps;
+            });
           };
+          rustc = pkgs.rust-bin.stable.latest.default;
         };
       in
+
       rec {
         packages = {
           default = packages.penrose-wm;
@@ -58,19 +67,7 @@
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
             rust-bin.stable.latest.default
-
-            glib.dev
-            cairo.dev
-            pango.dev
-            harfbuzz.dev
-            pkg-config
-            python3
-            xorg.libxcb.dev
-            xorg.libXrandr.dev
-            xorg.libXrender.dev
-            xorg.xmodmap
-
-          ];
+          ] ++ deps;
         };
       });
 }
