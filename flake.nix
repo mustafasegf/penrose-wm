@@ -53,7 +53,7 @@
               nativeBuildInputs = deps;
             });
           };
-          rustc = pkgs.rust-bin.stable.latest.default;
+          rustc = pkgs.rust-bin.stable.latest.minimal;
         };
       in
 
@@ -66,7 +66,7 @@
 
         devShell = pkgs.mkShell {
           buildInputs = with pkgs; [
-            rust-bin.stable.latest.default
+            rust-bin.stable.latest.complete
           ] ++ deps;
         };
       });
